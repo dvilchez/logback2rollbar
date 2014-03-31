@@ -1,10 +1,9 @@
 package com.xuaps;
 
-import com.sun.deploy.association.AssociationDesc;
 import com.xuaps.data.Trace;
-import org.fest.assertions.Assertions;
 import org.junit.Before;
 import org.junit.Test;
+import sun.net.www.http.HttpClient;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -19,6 +18,7 @@ public class RollbarNotifierTest {
     private String platform;
     private String language;
     private String framework;
+    private HttpClient httpClient;
 
     @Before
     public void setUp(){
@@ -31,17 +31,17 @@ public class RollbarNotifierTest {
 
     @Test
     public void initialize_rollbar_notifier(){
-        RollbarNotifier notifier=new RollbarNotifier(environment, access_token);
-        RollbarNotifier notifier2=new RollbarNotifier(environment, access_token, platform, language, framework);
+        RollbarNotifier notifier=new RollbarNotifier(httpClient, environment, access_token);
+        RollbarNotifier notifier2=new RollbarNotifier(httpClient,environment, access_token, platform, language, framework);
 
-        assert(notifier.getEnvironment()).equals(environment);
-        assert(notifier.getAccessToken()).equals(access_token);
+        assertThat(notifier.getEnvironment()).isEqualTo(environment);
+        assertThat(notifier.getAccessToken()).isEqualTo(access_token);
 
-        assert(notifier2.getEnvironment()).equals(environment);
-        assert(notifier2.getAccessToken()).equals(access_token);
-        assert(notifier2.getPlatform()).equals(platform);
-        assert(notifier2.getLanguage()).equals(language);
-        assert(notifier2.getFramework()).equals(framework);
+        assertThat(notifier2.getEnvironment()).isEqualTo(environment);
+        assertThat(notifier2.getAccessToken()).isEqualTo(access_token);
+        assertThat(notifier2.getPlatform()).isEqualTo(platform);
+        assertThat(notifier2.getLanguage()).isEqualTo(language);
+        assertThat(notifier2.getFramework()).isEqualTo(framework);
     }
 /*
 "context": "project#index",
@@ -54,17 +54,15 @@ fingerprint
 tittle
  */
     @Test
-    public void notify_exception(){
-        RollbarNotifier notifier=new RollbarNotifier(environment, access_token);
+    public void notify_exception_success(){
+        RollbarNotifier notifier=new RollbarNotifier(httpClient, environment, access_token);
 
         Trace trace=new Trace();
 
-        int result = notifier.NotifyException(trace);
+        RollbarResult result = notifier.NotifyException(trace);
 
-        assertThat("juas").isEqualTo("aaa");
-/*
-trace
- */
+        assertThat(result).isEqualTo(RollbarResult.Success);
+        //se hizo una llamada al servidor de rollabar con el json correcto
     }
 
     @Test

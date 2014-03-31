@@ -1,13 +1,12 @@
 package com.xuaps;
 
 
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.xuaps.data.Data;
 import com.xuaps.data.Data_;
 import com.xuaps.data.Payload;
 import com.xuaps.data.Trace;
+import sun.net.www.http.HttpClient;
 
 /**
  * Created by david.vilchez on 27/03/14.
@@ -15,10 +14,8 @@ import com.xuaps.data.Trace;
 public class RollbarNotifier {
     private final Payload payload;
     private final Data_ data;
-    private final Gson gson = new GsonBuilder().create();
-    private String pay;
 
-    public RollbarNotifier(String environment, String access_token) {
+    public RollbarNotifier(HttpClient httpClient, String environment, String access_token) {
         data=new Data_();
         data.setEnvironment(environment);
 
@@ -27,8 +24,8 @@ public class RollbarNotifier {
         payload.setData(data);
     }
 
-    public RollbarNotifier(String environment, String access_token, String platform, String language, String framework) {
-        this(environment, access_token);
+    public RollbarNotifier(HttpClient httpClient, String environment, String access_token, String platform, String language, String framework) {
+        this(httpClient, environment, access_token);
 
         data.setPlatform(platform);
         data.setLanguage(language);
@@ -55,7 +52,7 @@ public class RollbarNotifier {
         return data.getFramework();
     }
 
-    public int NotifyException(Trace trace) {
-        return 0;
+    public RollbarResult NotifyException(Trace trace) {
+        return RollbarResult.Success;
     }
 }
