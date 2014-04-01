@@ -15,8 +15,14 @@ public class RollbarNotifier {
     }
 
     public void NotifyException(Payload payload) throws IllegalArgumentException {
+        ValidateExceptionPayload(payload);
+    }
+
+    private void ValidateExceptionPayload(Payload payload) {
         if(payload.getData().getBody().getTrace()==null){
             throw new IllegalArgumentException("Trace data are required.");
+        }else if(payload.getData().getBody().getMessage()!=null){
+            throw new IllegalArgumentException("Data can´t contain Message");
         }
     }
 }

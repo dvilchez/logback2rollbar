@@ -1,18 +1,11 @@
 package com.xuaps;
 
-import co.freeside.betamax.Betamax;
-import co.freeside.betamax.Recorder;
-import co.freeside.betamax.httpclient.BetamaxRoutePlanner;
-import com.sun.javaws.exceptions.InvalidArgumentException;
-import com.xuaps.data.Body;
-import com.xuaps.data.Data_;
-import com.xuaps.data.Payload;
-import com.xuaps.data.Trace;
+import com.xuaps.data.*;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.fest.assertions.ThrowableAssert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
+
+import java.lang.Exception;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
@@ -58,11 +51,23 @@ fingerprint
 tittle
  */
     @Test
-    public void notify_exception_check_exist_trace() throws java.io.IOException{
+    public void notify_exception_checks_trace_is_present(){
 
         try {
             notifier.NotifyException(payload);
             fail("IllegalArgumentException expected because Data hasn´t Trace");
+        } catch (Exception e) {
+            assertThat(e).isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Test
+    public void notify_exception_checks_message_isnt_present(){
+        payload.getData().getBody().setTrace(new Trace());
+        payload.getData().getBody().setMessage(new Message());
+        try {
+            notifier.NotifyException(payload);
+            fail("IllegalArgumentException expected because Data can´t contain Trace and Message");
         } catch (Exception e) {
             assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
