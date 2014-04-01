@@ -1,11 +1,21 @@
 package com.xuaps;
 
+import co.freeside.betamax.Betamax;
+import co.freeside.betamax.Recorder;
+import co.freeside.betamax.httpclient.BetamaxRoutePlanner;
+import com.sun.javaws.exceptions.InvalidArgumentException;
+import com.xuaps.data.Body;
+import com.xuaps.data.Data_;
+import com.xuaps.data.Payload;
 import com.xuaps.data.Trace;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.fest.assertions.ThrowableAssert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import sun.net.www.http.HttpClient;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Fail.fail;
 
 
 /**
@@ -13,36 +23,30 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class RollbarNotifierTest {
 
-    private String environment;
-    private String access_token;
-    private String platform;
-    private String language;
-    private String framework;
-    private HttpClient httpClient;
+    private RollbarNotifier notifier;
+    private Payload payload;
+
+//    @Rule
+//    public Recorder recorder = new Recorder();
 
     @Before
     public void setUp(){
-        environment="production";
-        access_token="YOUR_PROJECT_ACCESS_TOKEN";
-        platform="linux";
-        language="python";
-        framework="pyramid";
+        DefaultHttpClient httpClient=new DefaultHttpClient();
+        //BetamaxRoutePlanner.configure(httpClient);
+        notifier=new RollbarNotifier(httpClient);
+
+        Body body=new Body();
+        Data_ data=new Data_();
+        data.setBody(body);
+        data.setEnvironment("production");
+        data.setPlatform("linux");
+        data.setLanguage("python");
+        data.setFramework("pyramid");
+        payload=new Payload();
+        payload.setAccess_token("YOUR_PROJECT_ACCESS_TOKEN");
+        payload.setData(data);
     }
 
-    @Test
-    public void initialize_rollbar_notifier(){
-        RollbarNotifier notifier=new RollbarNotifier(httpClient, environment, access_token);
-        RollbarNotifier notifier2=new RollbarNotifier(httpClient,environment, access_token, platform, language, framework);
-
-        assertThat(notifier.getEnvironment()).isEqualTo(environment);
-        assertThat(notifier.getAccessToken()).isEqualTo(access_token);
-
-        assertThat(notifier2.getEnvironment()).isEqualTo(environment);
-        assertThat(notifier2.getAccessToken()).isEqualTo(access_token);
-        assertThat(notifier2.getPlatform()).isEqualTo(platform);
-        assertThat(notifier2.getLanguage()).isEqualTo(language);
-        assertThat(notifier2.getFramework()).isEqualTo(framework);
-    }
 /*
 "context": "project#index",
 request
@@ -54,15 +58,14 @@ fingerprint
 tittle
  */
     @Test
-    public void notify_exception_success(){
-        RollbarNotifier notifier=new RollbarNotifier(httpClient, environment, access_token);
+    public void notify_exception_check_exist_trace() throws java.io.IOException{
 
-        Trace trace=new Trace();
-
-        RollbarResult result = notifier.NotifyException(trace);
-
-        assertThat(result).isEqualTo(RollbarResult.Success);
-        //se hizo una llamada al servidor de rollabar con el json correcto
+        try {
+            notifier.NotifyException(payload);
+            fail("IllegalArgumentException expected because Data hasn´t Trace");
+        } catch (Exception e) {
+            assertThat(e).isInstanceOf(IllegalArgumentException.class);
+        }
     }
 
     @Test
