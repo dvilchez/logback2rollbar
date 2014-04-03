@@ -6,10 +6,13 @@ import com.xuaps.data.Data;
 import com.xuaps.data.Payload;
 import com.xuaps.exception.AccessDeniedException;
 import com.xuaps.exception.CommunicationException;
+import com.xuaps.exception.UnprocessablePayloadException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+
+import static com.xuaps.StringUtils.InputStreamToString;
 
 /**
  * Created by david.vilchez on 27/03/14.
@@ -23,7 +26,7 @@ public class RollbarNotifier {
         this.gson=gson;
     }
 
-    public void NotifyException(Payload payload) throws IllegalArgumentException, AccessDeniedException, CommunicationException {
+    public void NotifyException(Payload payload) throws Throwable {
         //extract this logic to payload object, notify only accepts valid exceptions
         ValidateExceptionPayload(payload);
         Send(BuildJson(payload));
@@ -43,7 +46,7 @@ public class RollbarNotifier {
         }
     }
 
-    private void Send(String data) throws AccessDeniedException, CommunicationException {
+    private void Send(String data) throws Throwable {
         HttpResponse response=null;
         HttpPost request = new HttpPost("https://api.rollbar.com/api/1/item/");
         request.addHeader("content-type", "application/json");
@@ -56,6 +59,7 @@ public class RollbarNotifier {
 
         if(response.getStatusLine().getStatusCode()==403)
             throw new AccessDeniedException("Check your access_token.");
-        System.out.println(response.getEntity().toString());
+        else if(response.getStatusLine().getStatusCode()==422)
+            throw new UnprocessablePayloadException(gson.fromJson(InputStreamToString(response.getEntity().getContent()),Error.class));
     }
 }

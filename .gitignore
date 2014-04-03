@@ -1,4 +1,7 @@
 *.class
+out/
+src/test/resources/betamax/
+tests.properties
 
 # Package Files #
 *.jar
@@ -8,3 +11,4 @@
 #idea
 .idea/
 logback2rollbar.iml
+
