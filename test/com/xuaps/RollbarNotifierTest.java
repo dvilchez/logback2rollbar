@@ -1,11 +1,18 @@
 package com.xuaps;
 
+import co.freeside.betamax.Betamax;
+import co.freeside.betamax.Recorder;
+import co.freeside.betamax.httpclient.BetamaxHttpsSupport;
+import co.freeside.betamax.httpclient.BetamaxRoutePlanner;
+import com.google.gson.Gson;
 import com.xuaps.data.*;
+import com.xuaps.exception.AccessDeniedException;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
-import java.lang.Exception;
+import java.util.ArrayList;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
@@ -19,14 +26,16 @@ public class RollbarNotifierTest {
     private RollbarNotifier notifier;
     private Payload payload;
 
-//    @Rule
-//    public Recorder recorder = new Recorder();
+    @Rule
+    public Recorder recorder = new Recorder();
 
     @Before
     public void setUp(){
         DefaultHttpClient httpClient=new DefaultHttpClient();
-        //BetamaxRoutePlanner.configure(httpClient);
-        notifier=new RollbarNotifier(httpClient);
+        Gson gson=new Gson();
+        BetamaxRoutePlanner.configure(httpClient);
+        BetamaxHttpsSupport.configure(httpClient);
+        notifier=new RollbarNotifier(httpClient, gson);
 
         Body body=new Body();
         Data_ data=new Data_();
@@ -56,7 +65,7 @@ tittle
         try {
             notifier.NotifyException(payload);
             fail("IllegalArgumentException expected because Data hasn´t Trace");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             assertThat(e).isInstanceOf(IllegalArgumentException.class);
         }
     }
@@ -68,8 +77,26 @@ tittle
         try {
             notifier.NotifyException(payload);
             fail("IllegalArgumentException expected because Data can´t contain Trace and Message");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             assertThat(e).isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Betamax(tape="notify_execption_access_denied")
+    @Test
+    public void notify_exception_access_denied(){
+        Frame frame=new Frame();
+        frame.setFilename("filename.java");
+        ArrayList<Frame> frames=new ArrayList<Frame>();
+        frames.add(frame);
+        Trace trace=new Trace();
+        trace.setFrames(frames);
+        payload.getData().getBody().setTrace(trace);
+        try{
+            notifier.NotifyException(payload);
+            fail("AccessDeniedException expected because access token is wrong");
+        }catch(Throwable e){
+            assertThat(e).isInstanceOf(AccessDeniedException.class);
         }
     }
 
