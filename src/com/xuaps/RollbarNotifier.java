@@ -29,7 +29,16 @@ public class RollbarNotifier {
     public void NotifyException(Payload payload) throws Throwable {
         //extract this logic to payload object, notify only accepts valid exceptions
         ValidateExceptionPayload(payload);
-        Send(BuildJson(payload));
+        HttpResponse response=Send(BuildJson(payload));
+
+        if(response.getStatusLine().getStatusCode()!=200){
+            String content=
+                    gson.fromJson(InputStreamToString(response.getEntity().getContent()),com.xuaps.data.Error.class).getMessage();
+            if(response.getStatusLine().getStatusCode()==403)
+                throw new AccessDeniedException(content);
+            else if(response.getStatusLine().getStatusCode()==422)
+                throw new UnprocessablePayloadException(content);
+        }
     }
 
     private String BuildJson(Payload payload) {
@@ -46,23 +55,14 @@ public class RollbarNotifier {
         }
     }
 
-    private void Send(String data) throws Throwable {
-        HttpResponse response=null;
+    private HttpResponse Send(String data) throws Throwable {
         HttpPost request = new HttpPost("https://api.rollbar.com/api/1/item/");
         request.addHeader("content-type", "application/json");
         try {
             request.setEntity(new StringEntity(data));
-            response = httpClient.execute(request);
+            return httpClient.execute(request);
         } catch (Exception e) {
             throw new CommunicationException(e);
         }
-
-        
-        String content=
-                gson.fromJson(InputStreamToString(response.getEntity().getContent()),com.xuaps.data.Error.class).getMessage();
-        if(response.getStatusLine().getStatusCode()==403)
-            throw new AccessDeniedException(content);
-        else if(response.getStatusLine().getStatusCode()==422)
-            throw new UnprocessablePayloadException(content);
     }
 }
