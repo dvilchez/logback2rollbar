@@ -76,7 +76,7 @@ public class RollbarNotifierTest {
             fail("AccessDeniedException expected because access token is wrong");
         }catch(Throwable e){
             assertThat(e).isInstanceOf(AccessDeniedException.class);
-            //assertThat(e.getMessage()).isEqualTo("access token not found: YOUR_PROJECT_ACCESS_TOKEN");
+            assertThat(e.getMessage()).isEqualTo("access token not found: YOUR_PROJECT_ACCESS_TOKEN");
         }
     }
 
@@ -87,9 +87,8 @@ public class RollbarNotifierTest {
             notifier.NotifyException(DefaultPayload().WithTrace().WithAccessToken(props.getProperty("access_token")).Build());
             fail("UnprocessablePayloadException expected because payload semantic is wrong");
         }catch(Throwable e){
-            //e.printStackTrace();
             assertThat(e).isInstanceOf(UnprocessablePayloadException.class);
-            //assertThat(e.getMessage()).isEqualTo("Invalid format. data.body.trace.exception is missing and it is required.");
+            assertThat(e.getMessage()).isEqualTo("Invalid format. data.body.trace.exception is missing and it is required.");
         }
     }
 

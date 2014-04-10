@@ -57,9 +57,12 @@ public class RollbarNotifier {
             throw new CommunicationException(e);
         }
 
+        
+        String content=
+                gson.fromJson(InputStreamToString(response.getEntity().getContent()),com.xuaps.data.Error.class).getMessage();
         if(response.getStatusLine().getStatusCode()==403)
-            throw new AccessDeniedException("Check your access_token.");
+            throw new AccessDeniedException(content);
         else if(response.getStatusLine().getStatusCode()==422)
-            throw new UnprocessablePayloadException(gson.fromJson(InputStreamToString(response.getEntity().getContent()),Error.class));
+            throw new UnprocessablePayloadException(content);
     }
 }
