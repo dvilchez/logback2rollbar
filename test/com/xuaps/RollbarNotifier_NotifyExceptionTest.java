@@ -6,6 +6,7 @@ import co.freeside.betamax.httpclient.BetamaxHttpsSupport;
 import co.freeside.betamax.httpclient.BetamaxRoutePlanner;
 import com.google.gson.Gson;
 import com.xuaps.exception.AccessDeniedException;
+import com.xuaps.exception.RollbarException;
 import com.xuaps.exception.UnprocessablePayloadException;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Before;
@@ -24,7 +25,7 @@ import static org.fest.assertions.Fail.fail;
 /**
  * Created by david.vilchez on 26/03/14.
  */
-public class RollbarNotifierTest {
+public class RollbarNotifier_NotifyExceptionTest {
 
     private RollbarNotifier notifier;
 
@@ -73,9 +74,9 @@ public class RollbarNotifierTest {
     public void notify_exception_access_denied() throws IOException {
         try{
             notifier.NotifyException(DefaultPayload().WithTrace().Build());
-            fail("AccessDeniedException expected because access token is wrong");
+            fail("RollbarException expected because access token is wrong");
         }catch(Throwable e){
-            assertThat(e).isInstanceOf(AccessDeniedException.class);
+            assertThat(e).isInstanceOf(RollbarException.class);
             assertThat(e.getMessage()).isEqualTo("access token not found: YOUR_PROJECT_ACCESS_TOKEN");
         }
     }
@@ -85,15 +86,10 @@ public class RollbarNotifierTest {
     public void notify_exception_unprocessable_payload(){
         try{
             notifier.NotifyException(DefaultPayload().WithTrace().WithAccessToken(props.getProperty("access_token")).Build());
-            fail("UnprocessablePayloadException expected because payload semantic is wrong");
+            fail("RollbarException expected because payload semantic is wrong");
         }catch(Throwable e){
-            assertThat(e).isInstanceOf(UnprocessablePayloadException.class);
+            assertThat(e).isInstanceOf(RollbarException.class);
             assertThat(e.getMessage()).isEqualTo("Invalid format. data.body.trace.exception is missing and it is required.");
         }
-    }
-
-    @Test
-    public void notify_message(){
-
     }
 }

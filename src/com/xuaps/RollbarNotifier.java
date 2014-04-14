@@ -6,6 +6,7 @@ import com.xuaps.data.Data;
 import com.xuaps.data.Payload;
 import com.xuaps.exception.AccessDeniedException;
 import com.xuaps.exception.CommunicationException;
+import com.xuaps.exception.RollbarException;
 import com.xuaps.exception.UnprocessablePayloadException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -34,10 +35,7 @@ public class RollbarNotifier {
         if(response.getStatusLine().getStatusCode()!=200){
             String content=
                     gson.fromJson(InputStreamToString(response.getEntity().getContent()),com.xuaps.data.Error.class).getMessage();
-            if(response.getStatusLine().getStatusCode()==403)
-                throw new AccessDeniedException(content);
-            else if(response.getStatusLine().getStatusCode()==422)
-                throw new UnprocessablePayloadException(content);
+                throw new RollbarException(content);
         }
     }
 
